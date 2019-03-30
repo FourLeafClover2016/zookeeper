@@ -26,7 +26,7 @@ public class NodeCache_Sample {
                 .forPath(path, "init".getBytes());
 
         // 默认为false，如果设置为true，NodeCache第一次启动时，就会立刻从zookeeper上读取对应节点的数据保存在Cache中
-        NodeCache cache = new NodeCache(client, path, false);
+        final NodeCache cache = new NodeCache(client, path, false);
         cache.start();
         cache.getListenable().addListener(new NodeCacheListener() {
             public void nodeChanged() throws Exception {
