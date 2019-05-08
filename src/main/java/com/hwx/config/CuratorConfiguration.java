@@ -51,13 +51,16 @@ public class CuratorConfiguration {
     }*/
 
     public void init() {
-        client = client.usingNamespace("ZKLOCKS_Namespace");
+      //  client = client.usingNamespace("ZKLOCKS_Namespace");
         try {
-            client.create()
-                    .creatingParentsIfNeeded()
-                    .withMode(CreateMode.PERSISTENT)
-                    .withACL(ZooDefs.Ids.CREATOR_ALL_ACL)
-                    .forPath("/" + ZK_LOCK_PROJECT);
+            if(null == client.checkExists().forPath("/" + ZK_LOCK_PROJECT)){
+                client.create()
+                        .creatingParentsIfNeeded()
+                        .withMode(CreateMode.PERSISTENT)
+                        //.withACL(ZooDefs.Ids.CREATOR_ALL_ACL)
+                        .forPath("/" + ZK_LOCK_PROJECT);
+            }
+
             addWatcherToLock("/" + ZK_LOCK_PROJECT);
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,11 +73,12 @@ public class CuratorConfiguration {
                 client.create()
                         .creatingParentsIfNeeded()
                         .withMode(CreateMode.EPHEMERAL)
-                        .withACL(ZooDefs.Ids.CREATOR_ALL_ACL)
+                     //   .withACL(ZooDefs.Ids.CREATOR_ALL_ACL)
                         .forPath("/" + ZK_LOCK_PROJECT + "/" + DISTRIBUTED_LOCK);
                 System.out.println("获取锁......");
                 break;
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("获取锁失败......");
                 if (countDownLatch.getCount() <= 0) {
                     countDownLatch = new CountDownLatch(1);
@@ -120,19 +124,16 @@ public class CuratorConfiguration {
         });
     }
 
-    @Bean(initMethod = "")
-    public void curatorFramework() {
+    @Bean
+    public CuratorFramework getCuratorFramework() {
         this.client = CuratorFrameworkFactory.builder()
                 .connectString(connectString)
                 .sessionTimeoutMs(sessionTimeoutMs)
                 .connectionTimeoutMs(connectionTimeoutMs)
                 .retryPolicy(new RetryNTimes(retryCount, elapsedTimeMs))
                 .build();
+        client.start();
         init();
-       /* return CuratorFrameworkFactory.newClient(
-                connectString,
-                sessionTimeoutMs,
-                connectionTimeoutMs,
-                new RetryNTimes(retryCount, elapsedTimeMs));*/
+        return client;
     }
 }

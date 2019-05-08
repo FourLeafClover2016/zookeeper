@@ -21,7 +21,7 @@ public class GetSetDate {
                 System.out.println("Node" + dataPath + " deleted");
             }
         });
-        System.out.println(zkClient.readData(path));
+        System.out.println(zkClient.readData(path).toString());
         zkClient.writeData(path, 456);
         Thread.sleep(1000);
         zkClient.delete(path);
